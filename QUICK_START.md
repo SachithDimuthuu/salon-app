@@ -41,9 +41,9 @@ Your Luxe Hair Studio app now includes these exciting features:
 
 2. **Update Salon Location:**
    - Open `lib/screens/profile_screen.dart`
-   - Find line: `static const LatLng _salonLocation = LatLng(6.9271, 79.8612);`
-   - Replace with your actual salon coordinates
-   - Get coordinates from [Google Maps](https://www.google.com/maps) by right-clicking your location
+   - Find line: `static const LatLng _salonLocation = LatLng(7.2906, 80.6337);`
+   - Current location: 542 Peradeniya Rd, Kandy 20000
+   - To change: Get new coordinates from [Google Maps](https://www.google.com/maps) by right-clicking your location
 
 ## 🚀 Running the App
 

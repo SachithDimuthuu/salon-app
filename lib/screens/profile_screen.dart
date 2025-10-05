@@ -25,10 +25,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Position? _currentPosition;
   bool _isLoadingLocation = false;
   
-  // Salon location coordinates (Update with actual salon location)
-  static const LatLng _salonLocation = LatLng(6.9271, 79.8612);
+  // Salon location coordinates - 542 Peradeniya Rd, Kandy 20000
+  static const LatLng _salonLocation = LatLng(7.2906, 80.6337);
   static const String _salonPhone = '+94112345678'; // Update with actual salon phone number
   static const String _salonName = 'Luxe Hair Studio';
+  static const String _salonAddress = '542 Peradeniya Rd, Kandy 20000';
 
   @override
   void initState() {
@@ -266,6 +267,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Salon Location', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
                   const SizedBox(height: 8),
                   
+                  // Address display
+                  Row(
+                    children: [
+                      Icon(Icons.place, size: 16, color: primaryColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _salonAddress,
+                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  
                   // Distance indicator
                   if (_currentPosition != null)
                     Padding(
@@ -300,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 position: _salonLocation,
                                 infoWindow: const InfoWindow(
                                   title: 'Luxe Hair Studio',
-                                  snippet: 'Tap to get directions',
+                                  snippet: '542 Peradeniya Rd, Kandy 20000',
                                 ),
                                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
                               ),

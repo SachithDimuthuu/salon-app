@@ -271,7 +271,7 @@ class AllServicesScreen extends StatelessWidget {
                 ),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );

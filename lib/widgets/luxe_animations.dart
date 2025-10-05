@@ -51,9 +51,9 @@ class LuxeAnimations {
     Duration itemDuration = const Duration(milliseconds: 500),
   }) {
     return _StaggeredList(
-      children: children,
       itemDelay: itemDelay,
       itemDuration: itemDuration,
+      children: children,
     );
   }
 }

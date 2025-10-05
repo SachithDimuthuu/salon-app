@@ -6,7 +6,6 @@ import '../widgets/app_drawer.dart';
 import '../widgets/luxe_animations.dart';
 import 'all_services_screen.dart';
 import 'service_detail_screen.dart';
-import 'services_screen.dart' show categorizedServices;
 import '../widgets/smooth_transitions.dart';
 import '../utils/luxe_colors.dart';
 import '../utils/luxe_typography.dart';

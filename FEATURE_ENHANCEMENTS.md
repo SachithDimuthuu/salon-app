@@ -110,7 +110,7 @@ Privacy descriptions added:
 ### Update Salon Location
 In `profile_screen.dart`, update:
 ```dart
-static const LatLng _salonLocation = LatLng(6.9271, 79.8612); // Your coordinates
+static const LatLng _salonLocation = LatLng(7.2906, 80.6337); // 542 Peradeniya Rd, Kandy
 ```
 
 ### Update Salon Phone Number

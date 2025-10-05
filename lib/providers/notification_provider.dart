@@ -6,7 +6,7 @@ import 'dart:convert';
 class NotificationProvider extends ChangeNotifier {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _fcmToken;
-  List<Map<String, dynamic>> _notifications = [];
+  final List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = false;
 
   String? get fcmToken => _fcmToken;

@@ -457,7 +457,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -537,7 +537,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: Column(
               mainAxisSize: MainAxisSize.min,
