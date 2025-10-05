@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ProfileAvatar extends StatefulWidget {
   final String? imagePath;
@@ -22,14 +23,47 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 80);
-    if (picked != null) {
-      setState(() {
-        _imagePath = picked.path;
-      });
-      if (widget.onImageChanged != null) {
-        widget.onImageChanged!(picked.path);
+    // Request permission based on source
+    Permission permission = source == ImageSource.camera 
+        ? Permission.camera 
+        : Permission.photos;
+    
+    PermissionStatus status = await permission.request();
+    
+    if (status.isGranted) {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: source, imageQuality: 80);
+      if (picked != null) {
+        setState(() {
+          _imagePath = picked.path;
+        });
+        if (widget.onImageChanged != null) {
+          widget.onImageChanged!(picked.path);
+        }
+      }
+    } else if (status.isDenied) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${source == ImageSource.camera ? 'Camera' : 'Gallery'} permission is required'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+      }
+    } else if (status.isPermanentlyDenied) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Permission permanently denied. Please enable in settings.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
       }
     }
   }

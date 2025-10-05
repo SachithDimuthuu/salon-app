@@ -45,5 +45,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Permission descriptions for camera, photos, location, and phone -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take profile pictures</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select profile pictures</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save photos to your library</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show the distance to the salon and provide directions</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to show the distance to the salon and provide directions</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to show the distance to the salon and provide directions</string>
 </dict>
 </plist>

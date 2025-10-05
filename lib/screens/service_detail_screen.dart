@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/smooth_transitions.dart';
 import '../widgets/favorite_button.dart';
 import 'payment_screen.dart';
@@ -137,6 +138,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   
                   const SizedBox(height: 32),
                   
+                  // Contact Salon Button
+                  _buildContactSalonSection(primaryColor),
+                  
+                  const SizedBox(height: 24),
+                  
                   // Booking Policy Section
                   _buildBookingPolicySection(primaryColor),
                   
@@ -227,6 +233,93 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+  
+  Widget _buildContactSalonSection(Color primaryColor) {
+    const String salonPhone = '+94112345678'; // Update with actual salon phone number
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.headset_mic, color: primaryColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Need Help?',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Have questions about this service? Our team is here to help!',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final Uri phoneUri = Uri(scheme: 'tel', path: salonPhone);
+                try {
+                  if (await canLaunchUrl(phoneUri)) {
+                    await launchUrl(phoneUri);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not launch phone dialer')),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error making call: $e')),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.phone, size: 20),
+              label: Text(
+                'Call Salon Now',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
