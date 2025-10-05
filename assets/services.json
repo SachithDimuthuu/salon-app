@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "name": "Haircut",
+    "description": "Professional haircut by expert stylists.",
+    "imageUrl": "assets/images/haircut.png",
+    "price": 20.0
+  },
+  {
+    "id": "2",
+    "name": "Makeup",
+    "description": "Glamorous makeup for any occasion.",
+    "imageUrl": "assets/images/makeup.png",
+    "price": 35.0
+  },
+  {
+    "id": "3",
+    "name": "Facial",
+    "description": "Rejuvenating facial treatments.",
+    "imageUrl": "assets/images/facial.png",
+    "price": 30.0
+  },
+  {
+    "id": "4",
+    "name": "Spa",
+    "description": "Relaxing spa experience.",
+    "imageUrl": "assets/images/spa.png",
+    "price": 50.0
+  },
+  {
+    "id": "5",
+    "name": "Manicure",
+    "description": "Perfect nails, every time.",
+    "imageUrl": "assets/images/manicure.png",
+    "price": 15.0
+  }
+]
+

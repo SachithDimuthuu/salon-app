@@ -1,0 +1,64 @@
+<!-- 
+Luxe Hair Studio Logo Design Specifications
+==========================================
+
+Logo Concept: Modern, minimalist luxury salon branding
+Colors: Purple (#6A1B9A), Pink (#E91E63), White (#FFFFFF)
+Typography: Poppins Bold
+Elements: Abstract scissors, hair flow lines, luxury aesthetic
+
+SVG Logo Design (Square format for app icon):
+-->
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6A1B9A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E91E63;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F8BBD9;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" filter="url(#shadow)"/>
+  
+  <!-- Decorative Hair Lines -->
+  <path d="M150 200 Q256 150 362 200" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.6"/>
+  <path d="M150 220 Q256 170 362 220" stroke="#F8BBD9" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M150 240 Q256 190 362 240" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.4"/>
+  
+  <!-- Abstract Scissors -->
+  <g transform="translate(180, 280)">
+    <!-- Scissors Handle -->
+    <ellipse cx="20" cy="30" rx="8" ry="25" fill="#FFFFFF" opacity="0.9"/>
+    <ellipse cx="40" cy="30" rx="8" ry="25" fill="#FFFFFF" opacity="0.9"/>
+    
+    <!-- Scissors Blades -->
+    <path d="M15 10 L50 45 M45 10 L10 45" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Decorative Sparkles -->
+    <circle cx="60" cy="15" r="3" fill="#FFFFFF"/>
+    <circle cx="70" cy="25" r="2" fill="#F8BBD9"/>
+    <circle cx="65" cy="35" r="2.5" fill="#FFFFFF"/>
+  </g>
+  
+  <!-- Main Text "LUXE" -->
+  <text x="256" y="340" font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+        text-anchor="middle" fill="url(#textGradient)" filter="url(#shadow)">LUXE</text>
+  
+  <!-- Subtitle "HAIR STUDIO" -->
+  <text x="256" y="375" font-family="Arial, sans-serif" font-size="24" font-weight="500" 
+        text-anchor="middle" fill="#FFFFFF" opacity="0.9">HAIR STUDIO</text>
+  
+  <!-- Bottom decorative line -->
+  <line x1="180" y1="400" x2="332" y2="400" stroke="#FFFFFF" stroke-width="2" opacity="0.6"/>
+</svg>

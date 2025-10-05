@@ -1,0 +1,58 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+build/
+pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+*.iml
+
+# Android related
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# iOS related
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+
+# macOS related
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/Runner.xcworkspace/
+
+# Web related
+web/.dart_tool/
+web/build/
+
+# Linux related
+linux/flutter/
+linux/build/
+
+# Windows related
+windows/flutter/
+windows/build/
+
+# VS Code
+.vscode/
+
+# Others
+*.log
+*.tmp
+.DS_Store
+
+# Firebase
+firebase.json
+
+# Image Picker
+*.jpg
+*.png
+*.jpeg
+
