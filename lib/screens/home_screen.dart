@@ -4,6 +4,7 @@ import 'services_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/luxe_animations.dart';
+import '../widgets/deals_section.dart';
 import 'all_services_screen.dart';
 import 'service_detail_screen.dart';
 import '../widgets/smooth_transitions.dart';
@@ -42,31 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
-  // Featured services data
-  final List<Map<String, dynamic>> featuredServices = [
-    {
-      'name': 'Facial Treatment',
-      'image': 'assets/images/Basic_Facial.jpg',
-      'price': 4500.0,
-      'originalPrice': 5000.0,
-      'discount': '10% OFF',
-    },
-    {
-      'name': 'Hair Cut & Style',
-      'image': 'assets/images/Haircut.jpg',
-      'price': 3500.0,
-      'originalPrice': 4000.0,
-      'discount': '12% OFF',
-    },
-    {
-      'name': 'Manicure & Pedicure',
-      'image': 'assets/images/Manicure.jpg',
-      'price': 5000.0,
-      'originalPrice': 5800.0,
-      'discount': '14% OFF',
-    },
-  ];
 
   List<Map<String, dynamic>> get _filteredServices {
     if (_searchQuery.isEmpty) return [];
@@ -356,8 +332,8 @@ class _HomeScreenState extends State<HomeScreen> {
             
             const SizedBox(height: 32),
             
-            // Featured Services Carousel
-            _buildFeaturedServicesSection(primaryColor),
+            // Deals Section
+            const DealsSection(),
             
             const SizedBox(height: 32),
             
@@ -568,197 +544,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Featured Services Carousel Section
-  Widget _buildFeaturedServicesSection(Color primaryColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Featured Services",
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    SmoothPageTransitions.fadeTransition(
-                      const AllServicesScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                label: Text(
-                  'View All',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: primaryColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 220,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: featuredServices.length,
-            itemBuilder: (context, index) {
-              final service = featuredServices[index];
-              return Container(
-                width: 160,
-                margin: const EdgeInsets.only(right: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Material(
-                    color: Colors.white,
-                    child: InkWell(
-                      onTap: () {
-                        // Navigate to service detail
-                        Navigator.push(
-                          context,
-                          SmoothPageTransitions.slideFromRight(
-                            ServiceDetailScreen(
-                              serviceName: service['name'],
-                              description: 'Professional ${service['name'].toLowerCase()} service',
-                              price: service['price'].toDouble(),
-                              image: service['image'],
-                              category: 'Featured',
-                            ),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Image with discount badge
-                          Expanded(
-                            flex: 3,
-                            child: Stack(
-                              children: [
-                                Image.asset(
-                                  service['image'],
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          primaryColor.withOpacity(0.8),
-                                          primaryColor.withOpacity(0.6),
-                                        ],
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.spa,
-                                      color: Colors.white,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-                                // Discount badge
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: LuxeColors.accentPink,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      service['discount'],
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Service details
-                          Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    service['name'],
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey[800],
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const Spacer(),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'LKR ${service['price'].toStringAsFixed(0)}',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'LKR ${service['originalPrice'].toStringAsFixed(0)}',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                          decoration: TextDecoration.lineThrough,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  // Featured services section removed - replaced with DealsSection widget
 
   // Why Choose Us Section - Premium Design
   Widget _buildWhyChooseUsSection(Color primaryColor) {

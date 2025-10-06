@@ -24,6 +24,7 @@ import 'providers/favorites_provider.dart';
 import 'providers/booking_history_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/payment_provider.dart';
+import 'providers/deals_provider.dart';
 
 // Screens
 import 'screens/splash_screen.dart';
@@ -187,6 +188,7 @@ class LuxeHairStudioApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookingHistoryProvider()..loadBookings()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
+        ChangeNotifierProvider(create: (_) => DealsProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
