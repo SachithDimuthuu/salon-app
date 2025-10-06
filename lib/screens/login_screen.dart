@@ -256,7 +256,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).pushReplacementNamed('/register');
+                            },
                             child: Text(
                               'Register',
                               style: GoogleFonts.poppins(

@@ -50,16 +50,24 @@ class AppDrawer extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            width: 36,
-                            height: 36,
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white,
                             ),
-                            padding: const EdgeInsets.all(6),
-                            child: SvgPicture.asset(
-                              'assets/images/luxe_logo.svg',
-                              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                            padding: const EdgeInsets.all(5),
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return SvgPicture.asset(
+                                    'assets/images/luxe_logo.svg',
+                                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),

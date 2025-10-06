@@ -317,7 +317,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             ),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).pushReplacementNamed('/login');
+                            },
                             child: Text(
                               'Login',
                               style: GoogleFonts.poppins(

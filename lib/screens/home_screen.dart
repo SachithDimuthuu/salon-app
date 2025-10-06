@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
             LuxeAnimations.slideFromTop(
               duration: const Duration(milliseconds: 800),
               child: Container(
-                height: 240,
+                height: 280,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LuxeColors.getHeroGradient(isDarkMode),
@@ -152,26 +152,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           // Logo
                           Container(
-                            width: 60,
-                            height: 60,
+                            width: 70,
+                            height: 70,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.15),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 2,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: SvgPicture.asset(
-                                'assets/images/luxe_logo.svg',
-                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                placeholderBuilder: (context) => const Icon(
-                                  Icons.content_cut,
-                                  color: Colors.white,
-                                  size: 24,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      'assets/images/luxe_logo.svg',
+                                      colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
+                                      placeholderBuilder: (context) => const Icon(
+                                        Icons.content_cut,
+                                        color: LuxeColors.primaryPurple,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
