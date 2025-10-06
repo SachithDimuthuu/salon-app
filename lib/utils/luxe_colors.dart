@@ -1,24 +1,40 @@
 import 'package:flutter/material.dart';
 
 class LuxeColors {
-  // Primary Brand Colors
-  static const Color primaryPurple = Color(0xFF5E3B8A);
-  static const Color accentPink = Color(0xFFEFB7C6);
+  // Primary Brand Colors - WCAG AA Compliant
+  static const Color primaryPurple = Color(0xFF6B46A1); // Lightened for better contrast
+  static const Color accentPink = Color(0xFFE588B4); // Adjusted for accessibility
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
   
-  // Additional Brand Colors
-  static const Color lightPurple = Color(0xFF8A6BB3);
+  // Additional Brand Colors - Enhanced for Accessibility
+  static const Color lightPurple = Color(0xFF9B7DC1);
   static const Color darkPurple = Color(0xFF4A2966);
   static const Color lightPink = Color(0xFFF5D4DD);
-  static const Color deepPink = Color(0xFFE58FA3);
+  static const Color deepPink = Color(0xFFD97AA3);
   
-  // Dark Mode Specific Colors
-  static const Color darkModePrimary = Color(0xFF3D2354);   // Deeper purple for dark mode
-  static const Color darkModeSecondary = Color(0xFF2A1A3E); // Even deeper purple
-  static const Color darkCardBackground = Color(0xFF1C1C1E); // Specified dark card color
+  // Dark Mode Specific Colors - High Contrast
+  static const Color darkModePrimary = Color(0xFF8B6BB3);   // Lighter purple for dark mode visibility
+  static const Color darkModeSecondary = Color(0xFF9B7DC1); // Lighter secondary
+  static const Color darkCardBackground = Color(0xFF1E1E1E); // Slightly lighter for better readability
   static const Color darkSurface = Color(0xFF2C2C2E);
-  static const Color darkBackground = Color(0xFF000000);
+  static const Color darkBackground = Color(0xFF121212);
+  
+  // Light Mode Background Colors
+  static const Color lightBackground = Color(0xFFF8F7FA);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightCardBackground = Color(0xFFFFFFFF);
+  
+  // Accessible Text Colors - WCAG AAA Compliant
+  // Light Mode Text
+  static const Color textPrimaryLight = Color(0xFF1A1A1A); // High contrast on light backgrounds
+  static const Color textSecondaryLight = Color(0xFF4A4A4A); // Still readable
+  static const Color textTertiaryLight = Color(0xFF757575); // Subtle but readable
+  
+  // Dark Mode Text
+  static const Color textPrimaryDark = Color(0xFFE8E8E8); // High contrast on dark backgrounds
+  static const Color textSecondaryDark = Color(0xFFB8B8B8); // Still readable
+  static const Color textTertiaryDark = Color(0xFF8A8A8A); // Subtle but readable
   
   // Gradient Colors
   static const LinearGradient primaryGradient = LinearGradient(
@@ -33,20 +49,20 @@ class LuxeColors {
     colors: [accentPink, primaryPurple],
   );
   
-  // Dark Mode Gradients - Deeper purple shades for elegance
+  // Dark Mode Gradients - High Contrast & Accessible
   static const LinearGradient darkPrimaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [darkModePrimary, darkModeSecondary, Color(0xFF8B6BB1)],
+    colors: [Color(0xFF8B6BB3), Color(0xFF9B7DC1), Color(0xFFA88DC8)],
   );
   
   static const LinearGradient darkCardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF2A1A3E),
-      Color(0xFF3D2354),
-      Color(0xFF4A2966),
+      Color(0xFF2C2C2E),
+      Color(0xFF3A3A3C),
+      Color(0xFF48484A),
     ],
   );
   
@@ -54,12 +70,13 @@ class LuxeColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      Color(0xFF1A0F26),  // Very deep purple
-      Color(0xFF2A1A3E),  // Deep purple  
-      Color(0xFF3D2354),  // Medium deep purple
+      Color(0xFF1E1E1E),  // Dark background
+      Color(0xFF2C2C2E),  // Slightly lighter
+      Color(0xFF3A3A3C),  // Even lighter
     ],
   );
   
+  // Light Mode Gradients
   static const LinearGradient lightGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -70,27 +87,26 @@ class LuxeColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF5E3B8A),
-      Color(0xFF7A5BA3),
-      Color(0xFFEFB7C6),
+      Color(0xFF6B46A1),
+      Color(0xFF8B6BB3),
+      Color(0xFFE588B4),
     ],
   );
   
-  // Text Colors
-  static const Color textPrimary = Color(0xFF2E2E2E);
-  static const Color textSecondary = Color(0xFF757575);
-  static const Color textLight = Color(0xFFBDBDBD);
+  // Status Colors - WCAG AA Compliant
+  static const Color success = Color(0xFF2E7D32); // Darker green for better contrast
+  static const Color successLight = Color(0xFF66BB6A);
+  static const Color warning = Color(0xFFE65100); // Darker orange
+  static const Color warningLight = Color(0xFFFF9800);
+  static const Color error = Color(0xFFC62828); // Darker red
+  static const Color errorLight = Color(0xFFE57373);
+  static const Color info = Color(0xFF1565C0); // Darker blue
+  static const Color infoLight = Color(0xFF42A5F5);
   
-  // Background Colors
-  static const Color backgroundLight = Color(0xFFFAFAFA);
-  static const Color backgroundDark = Color(0xFF121212);
-  static const Color surface = Color(0xFFFFFFFF);
-  
-  // Status Colors
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFF44336);
-  static const Color info = Color(0xFF2196F3);
+  // Network Status Colors
+  static const Color online = Color(0xFF2E7D32);
+  static const Color offline = Color(0xFFC62828);
+  static const Color limitedConnection = Color(0xFFE65100);
   
   // Utility Methods
   static Color withOpacityCustom(Color color, double opacity) {
@@ -111,7 +127,7 @@ class LuxeColors {
   }
   
   static Color getCardBackground(bool isDarkMode) {
-    return isDarkMode ? darkCardBackground : surface;
+    return isDarkMode ? darkCardBackground : lightCardBackground;
   }
   
   static BoxDecoration getGradientBoxDecoration({

@@ -211,13 +211,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: primaryColor,
         title: Text('Profile', style: GoogleFonts.poppins(color: Colors.white)),
         actions: [
-          IconButton(
-            icon: Icon(
-              themeProvider.themeMode == ThemeMode.dark ? Icons.nightlight : Icons.wb_sunny,
-              color: Colors.white,
+          // Enhanced theme toggle with animation
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return RotationTransition(
+                turns: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+            child: IconButton(
+              key: ValueKey<IconData>(themeProvider.getThemeIcon()),
+              icon: Icon(
+                themeProvider.getThemeIcon(),
+                color: Colors.white,
+              ),
+              onPressed: themeProvider.toggleTheme,
+              tooltip: themeProvider.getThemeStatusText(),
             ),
-            onPressed: themeProvider.toggleTheme,
-            tooltip: 'Toggle Dark Mode',
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),

@@ -195,6 +195,8 @@ class LuxeHairStudioApp extends StatelessWidget {
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeProvider.themeMode,
+            themeAnimationDuration: const Duration(milliseconds: 500),
+            themeAnimationCurve: Curves.easeInOut,
             initialRoute: '/splash',
             routes: {
               '/splash': (context) => const SplashScreen(),
