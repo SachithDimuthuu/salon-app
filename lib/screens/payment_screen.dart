@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../providers/payment_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/booking_history_provider.dart';
+import '../utils/luxe_colors.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String serviceName;
@@ -47,11 +51,15 @@ class _PaymentScreenState extends State<PaymentScreen>
   // State
   bool _isProcessing = false;
   String _cardType = '';
+  
+  // Bank transfer image
+  File? _bankSlipImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     
     // Add listener for card number formatting
     _cardNumberController.addListener(_formatCardNumber);
@@ -134,8 +142,7 @@ class _PaymentScreenState extends State<PaymentScreen>
           labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
           tabs: const [
             Tab(icon: Icon(Icons.credit_card), text: 'Card'),
-            Tab(icon: Icon(Icons.account_balance_wallet), text: 'Wallet'),
-            Tab(icon: Icon(Icons.account_balance), text: 'Bank'),
+            Tab(icon: Icon(Icons.account_balance), text: 'Bank Transfer'),
           ],
         ),
       ),
@@ -331,31 +338,31 @@ class _PaymentScreenState extends State<PaymentScreen>
               controller: _tabController,
               children: [
                 _buildCardPaymentTab(),
-                _buildWalletPaymentTab(),
                 _buildBankPaymentTab(),
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Consumer<PaymentProvider>(
-          builder: (context, paymentProvider, child) {
-            return SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Consumer<PaymentProvider>(
+            builder: (context, paymentProvider, child) {
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
                 onPressed: _isProcessing || paymentProvider.isLoading
                     ? null
                     : _processPayment,
@@ -400,12 +407,13 @@ class _PaymentScreenState extends State<PaymentScreen>
           },
         ),
       ),
+      ), // Close SafeArea
     );
   }
 
   Widget _buildCardPaymentTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), // Bottom padding to avoid both nav bars
       child: Form(
         key: _formKey,
         child: Column(
@@ -598,88 +606,588 @@ class _PaymentScreenState extends State<PaymentScreen>
     );
   }
 
-  Widget _buildWalletPaymentTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildPaymentMethodTile(
-            icon: Icons.account_balance_wallet,
-            title: 'Apple Pay',
-            subtitle: 'Pay with Touch ID',
-            onTap: () {
-              _showComingSoonDialog('Apple Pay');
-            },
-          ),
-          _buildPaymentMethodTile(
-            icon: Icons.payment,
-            title: 'Google Pay',
-            subtitle: 'Quick and secure',
-            onTap: () {
-              _showComingSoonDialog('Google Pay');
-            },
-          ),
-          _buildPaymentMethodTile(
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'PayPal',
-            subtitle: 'Pay with your PayPal account',
-            onTap: () {
-              _showComingSoonDialog('PayPal');
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBankPaymentTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), // Bottom padding to avoid both nav bars
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildPaymentMethodTile(
-            icon: Icons.account_balance,
-            title: 'Bank Transfer',
-            subtitle: 'Direct transfer from your bank',
-            onTap: () {
-              _showComingSoonDialog('Bank Transfer');
-            },
+          // Bank details card
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: LuxeColors.primaryPurple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.account_balance,
+                          color: LuxeColors.primaryPurple,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bank Transfer',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: theme.textTheme.titleLarge?.color,
+                              ),
+                            ),
+                            Text(
+                              'Transfer to our account',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: theme.textTheme.bodySmall?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Divider(color: Colors.grey[300]),
+                  const SizedBox(height: 16),
+                  _buildBankDetail('Bank Name', 'Commercial Bank'),
+                  _buildBankDetail('Account Name', 'Luxe Hair Studio Pvt Ltd'),
+                  _buildBankDetail('Account Number', '1234567890'),
+                  _buildBankDetail('Branch', 'Kandy'),
+                  _buildBankDetail('Amount', 'Rs. ${widget.price.toStringAsFixed(2)}'),
+                ],
+              ),
+            ),
           ),
-          _buildPaymentMethodTile(
-            icon: Icons.qr_code,
-            title: 'QR Code Payment',
-            subtitle: 'Scan to pay instantly',
-            onTap: () {
-              _showComingSoonDialog('QR Code Payment');
-            },
+          
+          const SizedBox(height: 24),
+          
+          // Upload slip section
+          Text(
+            'Upload Bank Slip',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.titleLarge?.color,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Please upload a clear photo of your bank transfer slip for verification.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: theme.textTheme.bodySmall?.color,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Image preview or upload button
+          if (_bankSlipImage != null) ...[
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: Image.file(
+                      _bankSlipImage!,
+                      height: 250,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _pickBankSlipImage(ImageSource.gallery),
+                            icon: const Icon(Icons.photo_library),
+                            label: const Text('Change'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: primaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _bankSlipImage = null;
+                              });
+                            },
+                            icon: const Icon(Icons.delete_outline),
+                            label: const Text('Remove'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: LuxeColors.primaryPurple.withOpacity(0.3),
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignInside,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                color: LuxeColors.primaryPurple.withOpacity(0.05),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _showImageSourceDialog(),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cloud_upload_outlined,
+                          size: 64,
+                          color: LuxeColors.primaryPurple.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tap to Upload Bank Slip',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: LuxeColors.primaryPurple,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Take photo or choose from gallery',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: theme.textTheme.bodySmall?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          
+          const SizedBox(height: 24),
+          
+          // Info card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange[700], size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Your booking will be marked as PENDING until admin verifies your bank transfer.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.orange[900],
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Submit button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _bankSlipImage == null || _isProcessing
+                  ? null
+                  : _processBankTransferPayment,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: LuxeColors.primaryPurple,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey[300],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: _bankSlipImage == null ? 0 : 4,
+              ),
+              child: _isProcessing
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Submit for Verification',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildPaymentMethodTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Icon(icon, size: 32, color: const Color(0xFF6A1B9A)),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+  
+  Widget _buildBankDetail(String label, String value) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: theme.textTheme.bodyMedium?.color,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: theme.textTheme.titleMedium?.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _pickBankSlipImage(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _bankSlipImage = File(image.path);
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Bank slip image selected successfully'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } on Exception catch (e) {
+      debugPrint('Image picker error: ${e.toString()}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select image. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Unexpected error picking image: ${e.runtimeType} - ${e.toString()}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred. Please check camera/storage permissions.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+  
+  void _showImageSourceDialog() {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Upload Bank Slip',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: theme.textTheme.titleLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: LuxeColors.primaryPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.camera_alt, color: LuxeColors.primaryPurple),
+                ),
+                title: Text(
+                  'Camera',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Take a photo of your bank slip',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickBankSlipImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: LuxeColors.accentPink.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.photo_library, color: LuxeColors.accentPink),
+                ),
+                title: Text(
+                  'Gallery',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Choose from your photos',
+                  style: GoogleFonts.poppins(fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickBankSlipImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: GoogleFonts.poppins(fontSize: 12),
+      ),
+    );
+  }
+  
+  Future<void> _processBankTransferPayment() async {
+    if (_bankSlipImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please upload your bank transfer slip'),
+          backgroundColor: Colors.orange,
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
+      );
+      return;
+    }
+    
+    setState(() {
+      _isProcessing = true;
+    });
+    
+    try {
+      // Simulate upload delay
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final bookingHistory = Provider.of<BookingHistoryProvider>(context, listen: false);
+      
+      // Create booking with PENDING status via addBooking method
+      await bookingHistory.addBooking(
+        serviceName: widget.serviceName,
+        description: widget.description,
+        price: widget.price,
+        image: widget.image,
+        category: widget.category,
+        date: widget.selectedDate,
+        timeSlot: widget.timeSlot,
+      );
+      
+      // Update the last booking status to pending (since addBooking creates it as confirmed)
+      if (bookingHistory.bookingHistory.isNotEmpty) {
+        final lastBooking = bookingHistory.bookingHistory.first;
+        await bookingHistory.updateBookingStatus(lastBooking['id'], 'pending');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        _showPendingSuccessDialog();
+      }
+    } on FormatException catch (e) {
+      debugPrint('Format error in bank transfer: $e');
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid data format. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Bank transfer error: ${e.runtimeType} - ${e.toString()}');
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        
+        final errorMessage = e.toString().contains('Firebase')
+          ? 'Network error. Please check your connection.'
+          : 'Failed to submit bank transfer. Please try again.';
+          
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+  
+  void _showPendingSuccessDialog() {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.pending_actions,
+                size: 64,
+                color: Colors.orange,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Booking Pending!',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.titleLarge?.color,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your booking has been submitted and is awaiting admin verification.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: theme.textTheme.bodyMedium?.color,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'You will receive a notification once your payment is verified.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.orange[700],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Back to Home',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -713,6 +1221,18 @@ class _PaymentScreenState extends State<PaymentScreen>
     if (_tabController.index == 0) {
       // Card payment
       if (!_formKey.currentState!.validate()) return;
+      
+      // Check connectivity first
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final isOnline = connectivityResult != ConnectivityResult.none;
+      
+      if (!isOnline) {
+        // Show offline message and save pending payment
+        if (mounted) {
+          _showOfflinePaymentDialog();
+        }
+        return;
+      }
       
       setState(() => _isProcessing = true);
       
@@ -751,10 +1271,20 @@ class _PaymentScreenState extends State<PaymentScreen>
           await _onPaymentFailure();
         }
         
+      } on FormatException catch (e) {
+        debugPrint('Format error in payment: $e');
+        await _onPaymentFailure('Invalid payment data format. Please check your card details.');
       } catch (e) {
-        await _onPaymentFailure(e.toString());
+        // Catch all exceptions including FirebaseException
+        debugPrint('Payment error: ${e.runtimeType} - ${e.toString()}');
+        final errorMessage = e.toString().contains('Firebase') 
+          ? 'Network error. Please check your connection and try again.'
+          : 'Payment processing failed. Please try again.';
+        await _onPaymentFailure(errorMessage);
       } finally {
-        setState(() => _isProcessing = false);
+        if (mounted) {
+          setState(() => _isProcessing = false);
+        }
       }
     } else {
       // Other payment methods (coming soon)
@@ -847,7 +1377,47 @@ class _PaymentScreenState extends State<PaymentScreen>
       );
     }
   }
+
+  void _showOfflinePaymentDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.wifi_off, color: Colors.orange, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'No Internet Connection',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Your payment will be processed automatically once you\'re back online. Please ensure you have an active internet connection.',
+          style: GoogleFonts.poppins(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'OK',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF6A1B9A),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
 
 class PaymentSuccessScreen extends StatelessWidget {
   final String transactionId;

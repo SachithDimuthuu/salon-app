@@ -273,17 +273,33 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
                   
-                  // Dark Mode Toggle
+                  // Dark Mode Toggle (Optimized for performance)
                   Consumer<ThemeProvider>(
                     builder: (context, themeProvider, child) {
-                      return _buildDrawerItemWithSwitch(
-                        context,
-                        icon: themeProvider.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
-                        title: 'Dark Mode',
-                        value: themeProvider.themeMode == ThemeMode.dark,
-                        onChanged: (value) {
-                          themeProvider.toggleTheme();
-                        },
+                      final isDark = themeProvider.themeMode == ThemeMode.dark;
+                      final textColor = isDark ? Colors.white : Colors.black87;
+                      
+                      return ListTile(
+                        leading: Icon(
+                          isDark ? Icons.dark_mode : Icons.light_mode,
+                          color: LuxeColors.primaryPurple,
+                          size: 24,
+                        ),
+                        title: Text(
+                          'Dark Mode',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: textColor,
+                          ),
+                        ),
+                        trailing: Switch.adaptive(
+                          value: isDark,
+                          onChanged: (_) => themeProvider.toggleTheme(),
+                          activeColor: LuxeColors.primaryPurple,
+                          activeTrackColor: LuxeColors.primaryPurple.withOpacity(0.3),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       );
                     },
                   ),

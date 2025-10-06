@@ -247,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const ConnectivityBanner(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16).copyWith(bottom: 100), // Extra padding for bottom nav
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

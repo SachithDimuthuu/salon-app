@@ -216,6 +216,10 @@ class BookingHistoryScreen extends StatelessWidget {
         statusColor = Colors.red[600]!;
         statusIcon = Icons.cancel;
         break;
+      case 'pending':
+        statusColor = Colors.orange[600]!;
+        statusIcon = Icons.pending;
+        break;
       default:
         statusColor = Colors.grey[600]!;
         statusIcon = Icons.schedule;
@@ -416,6 +420,40 @@ class BookingHistoryScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              
+              // Cancel button (only for confirmed or pending bookings)
+              if (status == 'confirmed' || status == 'pending') ...[
+                const SizedBox(height: 12),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showCancelBookingDialog(
+                      context,
+                      historyProvider,
+                      booking['id'],
+                      booking['serviceName'],
+                    ),
+                    icon: const Icon(Icons.cancel_outlined, size: 18),
+                    label: Text(
+                      'Cancel Booking',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red[600],
+                      side: BorderSide(color: Colors.red[300]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -479,6 +517,120 @@ class BookingHistoryScreen extends StatelessWidget {
               ),
               child: Text(
                 'Clear All',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showCancelBookingDialog(
+    BuildContext context,
+    BookingHistoryProvider historyProvider,
+    String bookingId,
+    String serviceName,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange[700], size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Cancel Booking?',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to cancel your booking for "$serviceName"?',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'The booking fee paid is non-refundable and cannot be returned.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.red[900],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Keep Booking',
+                style: GoogleFonts.poppins(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await historyProvider.updateBookingStatus(bookingId, 'cancelled');
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Booking cancelled successfully',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      backgroundColor: Colors.red[600],
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Cancel Booking',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
