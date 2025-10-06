@@ -38,10 +38,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    // ignore: unused_local_variable
+    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -116,11 +119,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -130,7 +133,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       widget.description,
                       style: GoogleFonts.poppins(
                         fontSize: 15,
-                        color: Colors.grey[700],
+                        color: theme.textTheme.bodyLarge?.color,
                         height: 1.6,
                       ),
                     ),
@@ -161,10 +164,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

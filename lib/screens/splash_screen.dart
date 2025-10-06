@@ -81,25 +81,34 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 180,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.08),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.25),
-                            width: 1.5,
-                          ),
+                          color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: SvgPicture.asset(
-                            'assets/images/luxe_logo.svg',
-                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                            fit: BoxFit.contain,
+                        padding: const EdgeInsets.all(20),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback to SVG if PNG fails
+                              return Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: SvgPicture.asset(
+                                  'assets/images/luxe_logo.svg',
+                                  colorFilter: ColorFilter.mode(
+                                    LuxeColors.primaryPurple,
+                                    BlendMode.srcIn,
+                                  ),
+                                  fit: BoxFit.contain,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

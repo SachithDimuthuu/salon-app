@@ -33,6 +33,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // ignore: unused_local_variable
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (!authProvider.isAdmin) {
@@ -100,7 +104,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         }
 
         return Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
             title: Text(
               'Admin Dashboard',

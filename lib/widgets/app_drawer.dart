@@ -19,10 +19,13 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // ignore: unused_local_variable
+    final isDark = theme.brightness == Brightness.dark;
     const primaryColor = LuxeColors.primaryPurple;
     
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       child: SafeArea(
         child: Column(
           children: [
