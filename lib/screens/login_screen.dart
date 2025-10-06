@@ -282,44 +282,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     // Try to load logo.png, fallback to text logo
     const logoPath = 'assets/images/logo.png';
     
-    return FutureBuilder<bool>(
-      future: _checkFileExists(logoPath),
-      builder: (context, snapshot) {
-        if (snapshot.data == true) {
-          return Container(
-            height: 120,
-            width: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isDark ? LuxeColors.darkCardBackground : Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Image.asset(
-              logoPath,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => _buildTextLogo(isDark),
-            ),
-          );
-        }
-        return _buildTextLogo(isDark);
-      },
-    );
-  }
-
-  Widget _buildTextLogo(bool isDark) {
     return Container(
       height: 120,
       width: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: isDark ? LuxeColors.darkPrimaryGradient : LuxeColors.primaryGradient,
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.3 : 0.2),
@@ -328,27 +296,33 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'LHS',
-          style: GoogleFonts.poppins(
-            fontSize: 36,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+      padding: const EdgeInsets.all(15),
+      child: ClipOval(
+        child: Image.asset(
+          logoPath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            // If logo fails to load, show text logo
+            return Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isDark ? LuxeColors.darkPrimaryGradient : LuxeColors.primaryGradient,
+              ),
+              child: Center(
+                child: Text(
+                  'LHS',
+                  style: GoogleFonts.poppins(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
-  }
-
-  Future<bool> _checkFileExists(String path) async {
-    try {
-      // For assets, we can't check file existence directly
-      // So we'll return true and let the Image widget handle errors
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 }
 

@@ -342,41 +342,46 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   Widget _buildLogo(bool isDark) {
     const logoPath = 'assets/images/logo.png';
     
-    return FutureBuilder<bool>(
-      future: Future.value(true),
-      builder: (context, snapshot) {
-        return Container(
-          height: 100,
-          width: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: isDark ? LuxeColors.darkPrimaryGradient : LuxeColors.primaryGradient,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.3 : 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    return Container(
+      height: 100,
+      width: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
           ),
-          child: Center(
-            child: Image.asset(
-              logoPath,
-              fit: BoxFit.contain,
-              height: 60,
-              width: 60,
-              errorBuilder: (context, error, stackTrace) => Text(
-                'LHS',
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: ClipOval(
+        child: Image.asset(
+          logoPath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            // If logo fails to load, show text logo
+            return Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isDark ? LuxeColors.darkPrimaryGradient : LuxeColors.primaryGradient,
+              ),
+              child: Center(
+                child: Text(
+                  'LHS',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }
