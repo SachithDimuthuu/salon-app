@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,10 +7,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../providers/auth_provider.dart';
-import '../providers/booking_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/profile_avatar.dart';
-import '../widgets/booking_card.dart';
 import '../widgets/connectivity_banner.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,11 +22,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _profileImagePath;
   GoogleMapController? _mapController;
   Position? _currentPosition;
+  // ignore: unused_field
+  Timer? _debounce;
+  // ignore: unused_field
   bool _isLoadingLocation = false;
   
   // Salon location coordinates - 542 Peradeniya Rd, Kandy 20000
   static const LatLng _salonLocation = LatLng(7.2906, 80.6337);
   static const String _salonPhone = '+94112345678'; // Update with actual salon phone number
+  // ignore: unused_field
   static const String _salonName = 'Luxe Hair Studio';
   static const String _salonAddress = '542 Peradeniya Rd, Kandy 20000';
 
@@ -203,7 +206,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final auth = Provider.of<AuthProvider>(context);
-    final bookingProvider = Provider.of<BookingProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
@@ -268,12 +270,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text('Booking History', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
-                  const SizedBox(height: 8),
-                  if (bookingProvider.bookings.isEmpty)
-                    Text('No bookings yet.', style: GoogleFonts.poppins()),
-                  ...bookingProvider.bookings.reversed.map((b) => BookingCard(booking: b)),
                   const SizedBox(height: 24),
                   Text('Salon Location', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
                   const SizedBox(height: 8),

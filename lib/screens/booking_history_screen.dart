@@ -12,10 +12,12 @@ class BookingHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF6A1B9A);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    // ignore: unused_local_variable
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
@@ -194,6 +196,7 @@ class BookingHistoryScreen extends StatelessWidget {
   }
   
   Widget _buildBookingCard(BuildContext context, Map<String, dynamic> booking, BookingHistoryProvider historyProvider, Color primaryColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final bookingDate = DateTime.parse(booking['date']);
     final status = booking['status'] as String;
     
@@ -220,11 +223,11 @@ class BookingHistoryScreen extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
