@@ -1,39 +1,50 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/deal.dart';
 
 class DealsService {
-  // Base URL for your Railway-hosted salon web app
+  // Use centralized API configuration
   static const String baseUrl = 'https://hair-salon-production.up.railway.app';
   
-  // API endpoints - adjust these based on your actual API structure
+  // API endpoints
   static const String dealsEndpoint = '/api/deals';
   static const String activeDealsEndpoint = '/api/deals/active';
   
-  // API Key will be stored here (can be configured via settings)
+  // API Key for deals endpoint (if different from auth token)
   static String? _apiKey;
   
-  // Set API key
+  // Secure storage for auth token
+  static const _storage = FlutterSecureStorage();
+  
+  // Set API key for deals endpoint
   static void setApiKey(String apiKey) {
     _apiKey = apiKey;
     debugPrint('✅ API Key configured for Deals Service');
   }
   
-  // Get API key from storage or return null
+  // Get API key
   static String? get apiKey => _apiKey;
   
-  // Headers with API key
-  static Map<String, String> get _headers {
+  // Headers with authentication
+  static Future<Map<String, String>> get _headers async {
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
     
-    if (_apiKey != null && _apiKey!.isNotEmpty) {
+    // Try to get auth token first (for SSP Sanctum)
+    final authToken = await _storage.read(key: 'auth_token');
+    
+    if (authToken != null && authToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $authToken';
+      debugPrint('🔐 Using auth token for deals request');
+    } else if (_apiKey != null && _apiKey!.isNotEmpty) {
+      // Fallback to API key if no auth token
       headers['Authorization'] = 'Bearer $_apiKey';
-      // Or use different header format if your API expects it:
-      // headers['X-API-Key'] = _apiKey!;
+      // Or use: headers['X-API-Key'] = _apiKey!;
+      debugPrint('🔑 Using API key for deals request');
     }
     
     return headers;
@@ -44,10 +55,12 @@ class DealsService {
     try {
       debugPrint('🌐 Fetching deals from: $baseUrl$activeDealsEndpoint');
       
+      final headers = await _headers;
+      
       final response = await http
           .get(
             Uri.parse('$baseUrl$activeDealsEndpoint'),
-            headers: _headers,
+            headers: headers,
           )
           .timeout(timeout);
       
@@ -100,10 +113,12 @@ class DealsService {
     try {
       debugPrint('🔍 Testing connection to $baseUrl');
       
+      final headers = await _headers;
+      
       final response = await http
           .get(
             Uri.parse('$baseUrl/api/health'),
-            headers: _headers,
+            headers: headers,
           )
           .timeout(const Duration(seconds: 5));
       
