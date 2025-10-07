@@ -48,10 +48,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     
     setState(() { _loading = true; _error = null; });
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final error = await auth.login(_emailController.text.trim(), _passwordController.text.trim());
+    
+    final success = await auth.login(_emailController.text.trim(), _passwordController.text.trim());
+    
     if (mounted) {
-      setState(() { _loading = false; _error = error; });
-      if (error == null) {
+      setState(() { 
+        _loading = false; 
+        _error = success ? null : auth.errorMessage;
+      });
+      
+      if (success) {
         Navigator.pushReplacementNamed(context, '/');
       }
     }

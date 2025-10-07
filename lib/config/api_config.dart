@@ -1,70 +1,159 @@
-/// API Configuration for SSP Backend Integration
-/// This file contains the base URLs and endpoints for the Laravel Sanctum API
-
+/// API Configuration for Luxe Hair Studio
 class ApiConfig {
-  // Base URL for SSP Laravel API (Sanctum Authentication)
-  static const String sspBaseUrl = 'https://your-ssp-domain.com/api';
+  // Base URLs for different environments
+  static const String _localhost = 'http://127.0.0.1:8000';
+  static const String _production = 'https://hair-salon-production.up.railway.app';
   
-  // Base URL for Railway Deals API
-  static const String dealsBaseUrl = 'https://hair-salon-production.up.railway.app';
+  // Environment toggle
+  static const bool _useProduction = true;
   
-  // SSP API Endpoints
-  static const String loginEndpoint = '/login';
-  static const String registerEndpoint = '/register';
-  static const String logoutEndpoint = '/logout';
-  static const String userEndpoint = '/user';
-  static const String bookingsEndpoint = '/bookings';
-  static const String servicesEndpoint = '/services';
-  static const String profileEndpoint = '/profile';
-  static const String updateProfileEndpoint = '/profile/update';
-  static const String uploadImageEndpoint = '/profile/upload-image';
+  /// Get the appropriate base URL based on environment setting
+  static String get baseUrl {
+    if (_useProduction) {
+      return '$_production/api';
+    } else {
+      return '$_localhost/api';
+    }
+  }
   
-  // Deals API Endpoints
-  static const String dealsActiveEndpoint = '/api/deals/active';
-  static const String dealsEndpoint = '/api/deals';
-  static const String dealsHealthEndpoint = '/api/health';
+  /// Alternative method to get base URL with custom host IP
+  /// Use this when testing on physical devices with localhost
+  static String getBaseUrlWithIP(String hostIP) {
+    return 'http://$hostIP:8000/api';
+  }
   
-  // Timeout durations
+  // Authentication endpoints
+  static const String register = '/register';
+  static const String login = '/login';
+  static const String logout = '/logout';
+  static const String logoutAll = '/logout-all';
+  static const String user = '/user';
+  static const String demoToken = '/demo-token';
+  
+  // Services endpoints
+  static const String services = '/services';
+  static const String servicesPublic = '/services/public';
+  
+  // Deals endpoints
+  static const String deals = '/deals';
+  static const String dealsPublic = '/deals/public';
+  
+  /// Get full URL for an endpoint
+  static String getUrl(String endpoint) {
+    return '$baseUrl$endpoint';
+  }
+  
+  /// Get deal availability endpoint
+  static String getDealAvailability(String dealId) {
+    return '$baseUrl/deals/$dealId/availability';
+  }
+  
+  /// Get single service endpoint
+  static String getService(String serviceId) {
+    return '$baseUrl/services/$serviceId';
+  }
+  
+  /// Get single deal endpoint
+  static String getDeal(String dealId) {
+    return '$baseUrl/deals/$dealId';
+  }
+  
+  // Request timeouts
   static const Duration connectTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
   
-  // API Configuration
-  static const String apiVersion = 'v1';
-  static const bool enableLogging = true;
+  // Cache durations
+  static const Duration publicServicesCacheDuration = Duration(minutes: 5);
+  static const Duration publicDealsCacheDuration = Duration(minutes: 5);
   
-  // Full URLs
-  static String get loginUrl => '$sspBaseUrl$loginEndpoint';
-  static String get registerUrl => '$sspBaseUrl$registerEndpoint';
-  static String get logoutUrl => '$sspBaseUrl$logoutEndpoint';
-  static String get userUrl => '$sspBaseUrl$userEndpoint';
-  static String get bookingsUrl => '$sspBaseUrl$bookingsEndpoint';
-  static String get servicesUrl => '$sspBaseUrl$servicesEndpoint';
-  static String get profileUrl => '$sspBaseUrl$profileEndpoint';
-  static String get updateProfileUrl => '$sspBaseUrl$updateProfileEndpoint';
-  static String get uploadImageUrl => '$sspBaseUrl$uploadImageEndpoint';
+  // Pagination defaults
+  static const int defaultPerPage = 15;
+  static const int maxPerPage = 100;
   
-  static String get dealsActiveUrl => '$dealsBaseUrl$dealsActiveEndpoint';
-  static String get dealsUrl => '$dealsBaseUrl$dealsEndpoint';
-  static String get dealsHealthUrl => '$dealsBaseUrl$dealsHealthEndpoint';
+  // Token storage keys
+  static const String tokenKey = 'auth_token';
+  static const String userKey = 'user_data';
+  static const String lastLoginKey = 'last_login';
+  
+  // Headers
+  static const Map<String, String> defaultHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  
+  /// Get authorization header with token
+  static Map<String, String> getAuthHeaders(String token) {
+    return {
+      ...defaultHeaders,
+      'Authorization': 'Bearer $token',
+    };
+  }
+  
+  // API Response status codes
+  static const int successOk = 200;
+  static const int successCreated = 201;
+  static const int unauthorized = 401;
+  static const int forbidden = 403;
+  static const int notFound = 404;
+  static const int validationError = 422;
+  static const int tooManyRequests = 429;
+  static const int serverError = 500;
+  
+  // Environment detection
+  static bool get isDebug {
+    bool inDebugMode = false;
+    assert(inDebugMode = true);
+    return inDebugMode;
+  }
+  
+  /// Log API configuration info
+  static void logConfig() {
+    if (isDebug) {
+      print('=== API Configuration ===');
+      print('Base URL: $baseUrl');
+      print('========================');
+    }
+  }
 }
 
-/// Instructions for configuring your SSP domain:
-/// 
-/// 1. Replace 'https://your-ssp-domain.com/api' with your actual Laravel API URL
-///    Example: 'https://ssp.yourdomain.com/api' or 'http://192.168.1.100:8000/api' for local
-/// 
-/// 2. Make sure your Laravel API has these endpoints set up:
-///    POST   /api/login       - Login with email & password
-///    POST   /api/register    - Register new user
-///    POST   /api/logout      - Logout (requires auth)
-///    GET    /api/user        - Get authenticated user (requires auth)
-///    GET    /api/bookings    - Get user bookings (requires auth)
-///    GET    /api/services    - Get available services
-///    GET    /api/profile     - Get user profile (requires auth)
-///    POST   /api/profile/update - Update profile (requires auth)
-///    POST   /api/profile/upload-image - Upload profile image (requires auth)
-/// 
-/// 3. Ensure Sanctum is properly configured in your Laravel app:
-///    - SANCTUM_STATEFUL_DOMAINS in .env
-///    - cors.php configured for your Flutter app
-///    - api.php routes use auth:sanctum middleware
+/// API Endpoints enum for type safety
+enum ApiEndpoint {
+  register,
+  login,
+  logout,
+  logoutAll,
+  user,
+  demoToken,
+  services,
+  servicesPublic,
+  deals,
+  dealsPublic,
+}
+
+extension ApiEndpointExtension on ApiEndpoint {
+  String get path {
+    switch (this) {
+      case ApiEndpoint.register:
+        return ApiConfig.register;
+      case ApiEndpoint.login:
+        return ApiConfig.login;
+      case ApiEndpoint.logout:
+        return ApiConfig.logout;
+      case ApiEndpoint.logoutAll:
+        return ApiConfig.logoutAll;
+      case ApiEndpoint.user:
+        return ApiConfig.user;
+      case ApiEndpoint.demoToken:
+        return ApiConfig.demoToken;
+      case ApiEndpoint.services:
+        return ApiConfig.services;
+      case ApiEndpoint.servicesPublic:
+        return ApiConfig.servicesPublic;
+      case ApiEndpoint.deals:
+        return ApiConfig.deals;
+      case ApiEndpoint.dealsPublic:
+        return ApiConfig.dealsPublic;
+    }
+  }
+  
+  String get url => ApiConfig.getUrl(path);
+}

@@ -1,375 +1,272 @@
-﻿import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+﻿import 'package:flutter/foundation.dart';
+import '../models/auth_models.dart';
 import '../services/auth_service.dart';
+import '../config/api_config.dart';
 
-/// Authentication Provider with SSP Sanctum Integration
-/// Manages user authentication state and integrates with Laravel Sanctum API
+/// Authentication provider for managing authentication state
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService = AuthService();
-  
-  String? _name;
-  String? _email;
-  String? _phone;
-  String? _profileImage;
-  bool _isAdmin = false;
-  bool _isLoading = false;
+  // Private fields
+  User? _user;
+  AuthState _state = AuthState.initial;
   String? _errorMessage;
-  Map<String, dynamic>? _userData;
+  bool _isLoading = false;
 
-  String? get name => _name;
-  String? get email => _email;
-  String? get phone => _phone;
-  String? get profileImage => _profileImage;
-  bool get isAdmin => _isAdmin;
-  bool get isLoading => _isLoading;
+  // Getters
+  User? get user => _user;
+  AuthState get state => _state;
   String? get errorMessage => _errorMessage;
-  Map<String, dynamic>? get userData => _userData;
-  bool get isLoggedIn => _name != null && _email != null;
+  bool get isLoading => _isLoading;
+  bool get isAuthenticated => _state == AuthState.authenticated && _user != null;
+  bool get isUnauthenticated => _state == AuthState.unauthenticated;
+  bool get hasError => _state == AuthState.error;
 
-  AuthProvider() {
-    _loadUser();
-  }
+  // Legacy getters for compatibility
+  String? get name => _user?.name;
+  String? get email => _user?.email;
+  bool get isLoggedIn => isAuthenticated;
+  bool get isAdmin => _user?.isAdmin ?? false;
 
-  /// Load user data from local storage and verify token
-  Future<void> _loadUser() async {
-    _isLoading = true;
-    notifyListeners();
+  /// Initialize the authentication provider
+  Future<void> initialize() async {
+    await _setLoadingState(true);
     
     try {
-      // Check if user has valid token
-      final isAuth = await _authService.isAuthenticated();
+      if (ApiConfig.isDebug) {
+        print('🔄 Initializing AuthProvider...');
+        print('🔄 Platform: ${kIsWeb ? "Web" : "Mobile"}');
+      }
+
+      // Skip authentication check on web to avoid storage issues
+      if (kIsWeb) {
+        if (ApiConfig.isDebug) {
+          print('🌐 Web platform detected - skipping auto-authentication');
+        }
+        _setUnauthenticatedState();
+        return;
+      }
+
+      // Check for stored authentication data with timeout
+      final authStatus = await AuthService.checkAuthStatus()
+          .timeout(const Duration(seconds: 5), onTimeout: () {
+        if (ApiConfig.isDebug) {
+          print('⚠️ Auth check timeout - proceeding as unauthenticated');
+        }
+        return AuthStatusResponse(isAuthenticated: false, user: null);
+      });
       
-      if (isAuth) {
-        // Try to fetch current user from API
-        final user = await _authService.getCurrentUser();
-        
-        if (user != null) {
-          _userData = user;
-          _name = user['name'] ?? user['username'];
-          _email = user['email'];
-          _phone = user['phone'];
-          _profileImage = user['profile_image'] ?? user['avatar'];
-          _isAdmin = user['is_admin'] == true || 
-                     user['role'] == 'admin' ||
-                     _email?.toLowerCase() == 'admin@salon.com';
-        } else {
-          // Fallback to SharedPreferences if API fails
-          await _loadFromPrefs();
+      if (authStatus.isAuthenticated && authStatus.user != null) {
+        _setAuthenticatedState(authStatus.user!);
+        if (ApiConfig.isDebug) {
+          print('✅ User auto-authenticated: ${authStatus.user!.email}');
         }
       } else {
-        // No token, load from local prefs
-        await _loadFromPrefs();
-      }
-    } catch (e) {
-      debugPrint('[AuthProvider] Error loading user data: $e');
-      // Fallback to SharedPreferences
-      await _loadFromPrefs();
-    }
-    
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  /// Fallback method to load from SharedPreferences
-  Future<void> _loadFromPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _name = prefs.getString('user_name');
-      _email = prefs.getString('user_email');
-      _phone = prefs.getString('user_phone');
-      _profileImage = prefs.getString('profile_image');
-      _isAdmin = prefs.getBool('is_admin') ?? false;
-    } catch (e) {
-      debugPrint('[AuthProvider] Error loading from prefs: $e');
-    }
-  }
-
-  /// Save user data to SharedPreferences (for offline access)
-  Future<void> _saveToPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (_name != null) await prefs.setString('user_name', _name!);
-      if (_email != null) await prefs.setString('user_email', _email!);
-      if (_phone != null) await prefs.setString('user_phone', _phone!);
-      if (_profileImage != null) await prefs.setString('profile_image', _profileImage!);
-      await prefs.setBool('is_admin', _isAdmin);
-    } catch (e) {
-      debugPrint('[AuthProvider] Error saving to prefs: $e');
-    }
-  }
-
-  /// Register a new user with SSP Sanctum API
-  /// Returns null on success, error message on failure
-  Future<String?> register(String name, String email, String password, {String? phone}) async {
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      return "Name, email, and password required";
-    }
-    
-    // Email validation
-    if (!email.contains('@') || !email.contains('.')) {
-      return "Invalid email format";
-    }
-    
-    // Password validation
-    if (password.length < 8) {
-      return "Password must be at least 8 characters";
-    }
-    
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    
-    try {
-      final userData = {
-        'name': name,
-        'email': email,
-        'password': password,
-        'password_confirmation': password, // Laravel validation requirement
-        if (phone != null && phone.isNotEmpty) 'phone': phone,
-      };
-      
-      final success = await _authService.register(userData);
-      
-      if (success) {
-        // Check if auto-login happened (token was returned)
-        final isAuth = await _authService.isAuthenticated();
-        
-        if (isAuth) {
-          // Fetch user data from API
-          final user = await _authService.getCurrentUser();
-          if (user != null) {
-            _userData = user;
-            _name = user['name'] ?? name;
-            _email = user['email'] ?? email;
-            _phone = user['phone'] ?? phone;
-            _profileImage = user['profile_image'];
-            _isAdmin = user['is_admin'] == true || user['role'] == 'admin';
-          } else {
-            // Manual data set if API doesn't return user
-            _name = name;
-            _email = email;
-            _phone = phone;
-            _isAdmin = email.toLowerCase() == 'admin@salon.com';
-          }
-        } else {
-          // Registration successful but need to login separately
-          _name = name;
-          _email = email;
-          _phone = phone;
-          _isAdmin = email.toLowerCase() == 'admin@salon.com';
+        _setUnauthenticatedState();
+        if (ApiConfig.isDebug) {
+          print('ℹ️ No valid authentication found');
         }
-        
-        // Save to SharedPreferences for offline access
-        await _saveToPrefs();
-        
-        _isLoading = false;
-        notifyListeners();
-        return null; // Success
-      } else {
-        _isLoading = false;
-        _errorMessage = "Registration failed. Please try again.";
-        notifyListeners();
-        return _errorMessage;
       }
     } catch (e) {
-      debugPrint('[AuthProvider] Error during registration: $e');
-      _isLoading = false;
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
-      return _errorMessage ?? "Registration failed. Please try again.";
+      if (ApiConfig.isDebug) {
+        print('❌ AuthProvider initialization error: $e');
+      }
+      // On any error, just set as unauthenticated and continue
+      _setUnauthenticatedState();
+    } finally {
+      await _setLoadingState(false);
     }
   }
 
-  /// Login with email and password using SSP Sanctum API
-  /// Returns null on success, error message on failure
-  Future<String?> login(String email, String password) async {
-    if (email.isEmpty || password.isEmpty) {
-      return "Email and password required";
-    }
-    
-    // Email validation
-    if (!email.contains('@')) {
-      return "Invalid email format";
-    }
-    
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    
+  /// Login with email and password
+  Future<bool> login(String email, String password) async {
+    await _setLoadingState(true);
+    _clearError();
+
     try {
-      final success = await _authService.login(email, password);
-      
-      if (success) {
-        // Fetch user data from API
-        final user = await _authService.getCurrentUser();
-        
-        if (user != null) {
-          _userData = user;
-          _name = user['name'] ?? user['username'] ?? 'User';
-          _email = user['email'] ?? email;
-          _phone = user['phone'];
-          _profileImage = user['profile_image'] ?? user['avatar'];
-          _isAdmin = user['is_admin'] == true || 
-                     user['role'] == 'admin' ||
-                     email.toLowerCase() == 'admin@salon.com';
-        } else {
-          // Fallback if user fetch fails
-          _email = email;
-          _name = email.split('@')[0]; // Use email prefix as name
-          _isAdmin = email.toLowerCase() == 'admin@salon.com';
+      if (ApiConfig.isDebug) {
+        print(' Attempting login for: $email');
+      }
+
+      final request = LoginRequest(email: email, password: password);
+      final response = await AuthService.login(request);
+
+      if (response.isSuccess && response.data != null) {
+        _setAuthenticatedState(response.data!.user);
+        if (ApiConfig.isDebug) {
+          print(' Login successful: ${response.data!.user.email}');
         }
-        
-        // Save to SharedPreferences for offline access
-        await _saveToPrefs();
-        
-        _isLoading = false;
-        notifyListeners();
-        return null; // Success
+        return true;
       } else {
-        _isLoading = false;
-        _errorMessage = "Invalid credentials";
-        notifyListeners();
-        return _errorMessage;
+        final error = response.error?.firstError ?? 'Login failed';
+        _setErrorState(error);
+        if (ApiConfig.isDebug) {
+          print(' Login failed: $error');
+        }
+        return false;
       }
     } catch (e) {
-      debugPrint('[AuthProvider] Error during login: $e');
-      _isLoading = false;
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
-      return _errorMessage ?? "Login failed. Please check your credentials.";
+      _setErrorState('Login failed: $e');
+      if (ApiConfig.isDebug) {
+        print(' Login exception: $e');
+      }
+      return false;
+    } finally {
+      await _setLoadingState(false);
     }
   }
 
-  /// Logout user from SSP Sanctum API and clear local data
-  Future<void> logout() async {
-    _isLoading = true;
-    notifyListeners();
-    
-    try {
-      // Call API logout endpoint
-      await _authService.logout();
-      
-      // Clear local storage
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
-      await prefs.remove('user_phone');
-      await prefs.remove('profile_image');
-      await prefs.remove('is_admin');
-      
-      // Clear provider state
-      _name = null;
-      _email = null;
-      _phone = null;
-      _profileImage = null;
-      _isAdmin = false;
-      _userData = null;
-      _errorMessage = null;
-    } catch (e) {
-      debugPrint('[AuthProvider] Error during logout: $e');
-      // Clear local data even if API call fails
-      _name = null;
-      _email = null;
-      _phone = null;
-      _profileImage = null;
-      _isAdmin = false;
-      _userData = null;
-    }
-    
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  /// Toggle admin status (for testing/demo purposes)
-  Future<void> toggleAdminStatus() async {
-    try {
-      _isAdmin = !_isAdmin;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_admin', _isAdmin);
-      notifyListeners();
-    } catch (e) {
-      debugPrint('[AuthProvider] Error toggling admin status: $e');
-    }
-  }
-
-  /// Update user profile
-  Future<String?> updateProfile({
-    String? name,
-    String? phone,
-    String? profileImage,
+  /// Register a new user
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
   }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    
+    await _setLoadingState(true);
+    _clearError();
+
     try {
-      final profileData = <String, dynamic>{};
-      if (name != null && name.isNotEmpty) profileData['name'] = name;
-      if (phone != null && phone.isNotEmpty) profileData['phone'] = phone;
-      if (profileImage != null && profileImage.isNotEmpty) profileData['profile_image'] = profileImage;
-      
-      final success = await _authService.updateProfile(profileData);
-      
-      if (success) {
-        // Update local state
-        if (name != null) _name = name;
-        if (phone != null) _phone = phone;
-        if (profileImage != null) _profileImage = profileImage;
-        
-        // Save to SharedPreferences
-        await _saveToPrefs();
-        
-        _isLoading = false;
-        notifyListeners();
-        return null; // Success
+      if (ApiConfig.isDebug) {
+        print('🔄 Attempting registration for: $email');
+        print('🔄 Name: $name');
+        print('🔄 Password length: ${password.length}');
+        print('🔄 Passwords match: ${password == passwordConfirmation}');
+      }
+
+      // Client-side validation first
+      final request = RegisterRequest(
+        name: name,
+        email: email,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+
+      final validationErrors = request.validate();
+      if (validationErrors.isNotEmpty) {
+        final errorMessage = validationErrors.join(', ');
+        _setErrorState(errorMessage);
+        if (ApiConfig.isDebug) {
+          print('❌ Client validation failed: $errorMessage');
+        }
+        return false;
+      }
+
+      if (ApiConfig.isDebug) {
+        print('✅ Client validation passed, sending to API...');
+      }
+
+      final response = await AuthService.register(request);
+
+      if (response.isSuccess && response.data != null) {
+        _setAuthenticatedState(response.data!.user);
+        if (ApiConfig.isDebug) {
+          print('✅ Registration successful: ${response.data!.user.email}');
+        }
+        return true;
       } else {
-        _isLoading = false;
-        _errorMessage = "Profile update failed";
-        notifyListeners();
-        return _errorMessage;
+        final error = response.error?.firstError ?? 'Registration failed';
+        _setErrorState(error);
+        if (ApiConfig.isDebug) {
+          print('❌ Registration failed: $error');
+          if (response.error != null) {
+            print('❌ Full error details: ${response.error!.allErrors}');
+          }
+        }
+        return false;
       }
     } catch (e) {
-      debugPrint('[AuthProvider] Error updating profile: $e');
-      _isLoading = false;
-      _errorMessage = "Profile update failed";
-      notifyListeners();
-      return _errorMessage;
+      _setErrorState('Registration failed: $e');
+      if (ApiConfig.isDebug) {
+        print('❌ Registration exception: $e');
+      }
+      return false;
+    } finally {
+      await _setLoadingState(false);
     }
   }
 
-  /// Upload profile image
-  Future<String?> uploadProfileImage(String filePath) async {
-    _isLoading = true;
-    notifyListeners();
-    
+  /// Logout the current user
+  Future<void> logout() async {
+    await _setLoadingState(true);
+
     try {
-      final imageUrl = await _authService.uploadProfileImage(filePath);
+      if (ApiConfig.isDebug) {
+        print(' Logging out user: ${_user?.email}');
+      }
+
+      await AuthService.logout();
+      _setUnauthenticatedState();
       
-      if (imageUrl != null) {
-        _profileImage = imageUrl;
-        await _saveToPrefs();
-        _isLoading = false;
-        notifyListeners();
-        return null; // Success
-      } else {
-        _isLoading = false;
-        return "Image upload failed";
+      if (ApiConfig.isDebug) {
+        print(' Logout successful');
       }
     } catch (e) {
-      debugPrint('[AuthProvider] Error uploading image: $e');
-      _isLoading = false;
-      return "Image upload failed";
+      if (ApiConfig.isDebug) {
+        print(' Logout error: $e');
+      }
+      // Still set unauthenticated state even if logout API call fails
+      _setUnauthenticatedState();
+    } finally {
+      await _setLoadingState(false);
     }
   }
 
-  /// Clear error message
+  /// Clear any error state
   void clearError() {
+    _clearError();
+    notifyListeners();
+  }
+
+  /// Legacy method: Upload profile image (placeholder for compatibility)
+  Future<String?> uploadProfileImage(String imagePath) async {
+    // TODO: Implement profile image upload via API
+    // For now, just return null to indicate no error
+    return null;
+  }
+
+  /// Legacy method: Toggle admin status (placeholder for compatibility)
+  void toggleAdminStatus() {
+    // TODO: Implement admin status toggle via API
+    // For now, this is a no-op
+  }
+
+  // Private helper methods
+  void _setAuthenticatedState(User user) {
+    _user = user;
+    _state = AuthState.authenticated;
     _errorMessage = null;
     notifyListeners();
   }
 
-  /// Get authentication token (for other services to use)
-  Future<String?> getAuthToken() async {
-    return await _authService.getToken();
+  void _setUnauthenticatedState() {
+    _user = null;
+    _state = AuthState.unauthenticated;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  void _setErrorState(String error) {
+    _state = AuthState.error;
+    _errorMessage = error;
+    notifyListeners();
+  }
+
+  Future<void> _setLoadingState(bool loading) async {
+    _isLoading = loading;
+    if (loading) {
+      _state = AuthState.loading;
+    }
+    notifyListeners();
+    
+    // Small delay to ensure UI updates
+    if (loading) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+  }
+
+  void _clearError() {
+    _errorMessage = null;
+    if (_state == AuthState.error) {
+      _state = isAuthenticated ? AuthState.authenticated : AuthState.unauthenticated;
+    }
   }
 }

@@ -53,14 +53,21 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     
     setState(() { _loading = true; _error = null; });
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final error = await auth.register(
-      _nameController.text.trim(),
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
+    
+    final success = await auth.register(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      passwordConfirmation: _confirmPasswordController.text.trim(),
     );
+    
     if (mounted) {
-      setState(() { _loading = false; _error = error; });
-      if (error == null) {
+      setState(() { 
+        _loading = false; 
+        _error = success ? null : auth.errorMessage;
+      });
+      
+      if (success) {
         Navigator.pushReplacementNamed(context, '/');
       }
     }

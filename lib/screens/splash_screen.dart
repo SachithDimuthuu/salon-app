@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../utils/luxe_colors.dart';
 import '../utils/luxe_typography.dart';
+import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,12 +45,26 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // Navigate to main screen after animation
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/');
-      }
-    });
+    // Navigate after animation and auth check
+    _navigateAfterSplash();
+  }
+
+  // Navigate based on authentication status
+  void _navigateAfterSplash() async {
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (!mounted) return;
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Initialize auth provider after splash
+    await authProvider.initialize();
+    
+    if (authProvider.isAuthenticated) {
+      Navigator.of(context).pushReplacementNamed('/');
+    } else {
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override

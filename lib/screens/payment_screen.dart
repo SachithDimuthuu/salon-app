@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../providers/payment_provider.dart';
@@ -902,6 +903,20 @@ class _PaymentScreenState extends State<PaymentScreen>
   
   Future<void> _pickBankSlipImage(ImageSource source) async {
     try {
+      // Check if running on web platform
+      if (kIsWeb && source == ImageSource.camera) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Camera is not supported on web. Please use gallery instead.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+      
       final XFile? image = await _imagePicker.pickImage(
         source: source,
         imageQuality: 80,
@@ -916,10 +931,10 @@ class _PaymentScreenState extends State<PaymentScreen>
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Bank slip image selected successfully'),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -928,21 +943,24 @@ class _PaymentScreenState extends State<PaymentScreen>
       debugPrint('Image picker error: ${e.toString()}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to select image. Please try again.'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }
     } catch (e) {
       debugPrint('Unexpected error picking image: ${e.runtimeType} - ${e.toString()}');
       if (mounted) {
+        final errorMessage = kIsWeb 
+          ? 'Image picker is not fully supported on web. Please use the mobile app for better experience.'
+          : 'An error occurred. Please check camera/storage permissions.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('An error occurred. Please check camera/storage permissions.'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -1277,10 +1295,15 @@ class _PaymentScreenState extends State<PaymentScreen>
       } catch (e) {
         // Catch all exceptions including FirebaseException
         debugPrint('Payment error: ${e.runtimeType} - ${e.toString()}');
-        final errorMessage = e.toString().contains('Firebase') 
-          ? 'Network error. Please check your connection and try again.'
-          : 'Payment processing failed. Please try again.';
-        await _onPaymentFailure(errorMessage);
+        
+        // Don't show error for simulated payment decline - it's handled in processPayment
+        // Only show error for actual technical failures
+        if (e.toString().toLowerCase().contains('exception')) {
+          final errorMessage = e.toString().contains('Firebase') || e.toString().contains('XMLHttpRequest')
+            ? 'Connection error. Please check your internet and try again.'
+            : 'Payment processing error. Please try again.';
+          await _onPaymentFailure(errorMessage);
+        }
       } finally {
         if (mounted) {
           setState(() => _isProcessing = false);

@@ -310,6 +310,7 @@ class _DealsSectionState extends State<DealsSection> {
 
     return Container(
       width: 280,
+      height: 352, // Increased to 352 to eliminate 1px overflow
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: theme.cardColor,
@@ -434,7 +435,7 @@ class _DealsSectionState extends State<DealsSection> {
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10), // Reduced padding from 12 to 10
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -449,7 +450,7 @@ class _DealsSectionState extends State<DealsSection> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2), // Reduced spacing from 4 to 2
                         
                         // Description
                         Text(
